@@ -1,0 +1,75 @@
+- hosts: localhost
+  become: yes
+  tasks:
+    ## Delete Auto Scaling Group
+    - ec2_asg:
+        aws_access_key: YOUR_AWS_ACCESS_KEY
+        aws_secret_key: YOUR_AWS_SECRET_KEY
+        name: "sada-asg"
+        state: absent
+        region: "eu-north-1"
+
+    ## Delete Launch Configuration
+    - ec2_lc:
+        aws_access_key: YOUR_AWS_ACCESS_KEY
+        aws_secret_key: YOUR_AWS_SECRET_KEY
+        name: "sada-launch-config"
+        state: absent
+        region: "eu-north-1"
+
+    ## Delete Elastic Load Balancer
+    - ec2_elb_lb:
+        aws_access_key: YOUR_AWS_ACCESS_KEY
+        aws_secret_key: YOUR_AWS_SECRET_KEY
+        name: "sada-elb"
+        state: absent
+        region: "eu-north-1"
+
+    ## Delete EC2 Instances
+    - ec2:
+        aws_access_key: YOUR_AWS_ACCESS_KEY
+        aws_secret_key: YOUR_AWS_SECRET_KEY
+        instance_ids: "i-1234567890abcdef0"  # Replace with your instance IDs or use filters to select instances to delete
+        state: absent
+        region: "eu-north-1"
+
+    ## Delete Security Group
+    - ec2_group:
+        aws_access_key: YOUR_AWS_ACCESS_KEY
+        aws_secret_key: YOUR_AWS_SECRET_KEY
+        name: "sada-sg"
+        state: absent
+        region: "eu-north-1"
+
+    ## Delete Route Tables
+    - ec2_vpc_route_table:
+        aws_access_key: YOUR_AWS_ACCESS_KEY
+        aws_secret_key: YOUR_AWS_SECRET_KEY
+        vpc_id: "vpc-12345678"  # Replace with your VPC ID
+        state: absent
+        region: "eu-north-1"
+
+    ## Delete Subnets
+    - ec2_vpc_subnet:
+        aws_access_key: YOUR_AWS_ACCESS_KEY
+        aws_secret_key: YOUR_AWS_SECRET_KEY
+        vpc_id: "vpc-12345678"  # Replace with your VPC ID
+        subnet_id: "subnet-12345678"  # Replace with your subnet ID
+        state: absent
+        region: "eu-north-1"
+
+    ## Delete Internet Gateway
+    - ec2_vpc_igw:
+        aws_access_key: YOUR_AWS_ACCESS_KEY
+        aws_secret_key: YOUR_AWS_SECRET_KEY
+        vpc_id: "vpc-12345678"  # Replace with your VPC ID
+        state: absent
+        region: "eu-north-1"
+
+    ## Delete VPC
+    - ec2_vpc_net:
+        aws_access_key: YOUR_AWS_ACCESS_KEY
+        aws_secret_key: YOUR_AWS_SECRET_KEY
+        vpc_id: "vpc-12345678"  # Replace with your VPC ID
+        state: absent
+        region: "eu-north-1"
