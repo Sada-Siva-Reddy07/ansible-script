@@ -1,0 +1,129 @@
+- hosts: localhost
+  become: yes
+  tasks:
+
+    ##VPC-creation
+    - ec2_vpc_net:
+        aws_access_key: 
+        aws_secret_key: 
+        cidr_block: "10.0.0.0/16"
+        name: vivek-vpc
+        region: "eu-north-1"
+        state: "present"  # to delete VPC then replace 'present' with 'absent'
+      register: vpc_result
+
+    - ec2_vpc_igw:
+        aws_access_key:
+        aws_secret_key: 
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        region: "eu-north-1"
+        state: "present"
+        tags:
+          Name: sada-igw
+      register: igw_result
+
+    - ec2_vpc_subnet:
+        aws_access_key: 
+        aws_secret_key: 
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        region: eu-north-1
+        az: eu-north-1a  # az is the availability zone
+        state: "present"
+        cidr: 10.0.0.0/20
+        # enable public ip
+        map_public: yes
+        resource_tags:
+          Name: sada-pub
+      register: pubsubnet_result
+
+    - ec2_vpc_subnet:
+        aws_access_key: 
+        aws_secret_key: 
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        region: "eu-north-1"
+        az: "eu-north-1b"
+        state: "present"
+        cidr: "10.0.16.0/20"
+        map_public: no
+        resource_tags:
+          Name: sada-pvt
+      register: pvtsubnet_result
+
+    - ec2_vpc_route_table:
+        aws_access_key: 
+        aws_secret_key: 
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        region: "eu-north-1"
+        state: "present"
+        tags:
+          Name: "sada-pub-rt"
+        subnets: ["{{ pubsubnet_result.subnet.id }}"]
+        # create routes
+        routes:
+          - dest: "0.0.0.0/0"
+            gateway_id: "{{ igw_result.gateway_id }}"
+      register: public_route_table
+
+    - ec2_vpc_route_table:
+        aws_access_key: 
+        aws_secret_key: 
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        region: "eu-north-1"
+        state: "present"
+        tags:
+          Name: "sada-pvt-rt"
+        subnets: ["{{ pvtsubnet_result.subnet.id }}"]
+      register: private_route_table
+
+    - ec2_group:
+        aws_access_key: 
+        aws_secret_key:
+        vpc_id: "{{ vpc_result.vpc.id }}"
+        region: "eu-north-1"
+        state: "present"
+        name: "sada-sg"
+        description: "allow"
+        tags:
+          Name: "sada-sg"
+        rules:
+          - proto: "all"
+            cidr_ip: "0.0.0.0/0"
+            rule_desc: "allow all traffic"
+      register: security_group_results
+
+    - ec2_elb_lb:
+        aws_access_key: 
+        aws_secret_key: 
+        name: "sada-elb"
+        state: present
+        region: "eu-north-1"
+        security_group_names: ["sada-sg"]
+        subnets: ["{{ pubsubnet_result.subnet.id }}"]
+
+    - ec2_asg:
+        aws_access_key: 
+        aws_secret_key: 
+        name: "sada-asg"
+        launch_config_name: "sada-launch-config"
+        min_size: 1
+        max_size: 3
+        desired_capacity: 2
+        region: "eu-north-1"
+        vpc_zone_identifier: "{{ pubsubnet_result.subnet.id }}"
+        tags:
+          - key: Name
+            value: sada-asg
+            propagate_at_launch: true
+
+    - ec2_lc:
+        aws_access_key: 
+        aws_secret_key: 
+        name: "sada-launch-config"
+        image_id: "ami-0f0ec0d37d04440e3"
+        instance_type: "t3.micro"
+        key_name: "stockhol"
+        region: "eu-north-1"
+        security_groups: ["sada-sg"]
+        user_data: |
+          #!/bin/bash
+          echo "Hello from user data!" > /tmp/user-data-output.txt
