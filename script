@@ -7,8 +7,8 @@
         aws_access_key: 
         aws_secret_key: 
         cidr_block: "10.0.0.0/16"
-        name: vivek-vpc
-        region: "eu-north-1"
+        name: sada-vpc
+        region: "eu-west-1"
         state: "present"  # to delete VPC then replace 'present' with 'absent'
       register: vpc_result
 
@@ -16,7 +16,7 @@
         aws_access_key:
         aws_secret_key: 
         vpc_id: "{{ vpc_result.vpc.id }}"
-        region: "eu-north-1"
+        region: "eu-west-1"
         state: "present"
         tags:
           Name: sada-igw
@@ -26,8 +26,8 @@
         aws_access_key: 
         aws_secret_key: 
         vpc_id: "{{ vpc_result.vpc.id }}"
-        region: eu-north-1
-        az: eu-north-1a  # az is the availability zone
+        region: eu-west-1
+        az: eu-west-1a  # az is the availability zone
         state: "present"
         cidr: 10.0.0.0/20
         # enable public ip
@@ -40,8 +40,8 @@
         aws_access_key: 
         aws_secret_key: 
         vpc_id: "{{ vpc_result.vpc.id }}"
-        region: "eu-north-1"
-        az: "eu-north-1b"
+        region: "eu-west-1"
+        az: "eu-west-1b"
         state: "present"
         cidr: "10.0.16.0/20"
         map_public: no
@@ -68,7 +68,7 @@
         aws_access_key: 
         aws_secret_key: 
         vpc_id: "{{ vpc_result.vpc.id }}"
-        region: "eu-north-1"
+        region: "eu-west-1"
         state: "present"
         tags:
           Name: "sada-pvt-rt"
@@ -79,7 +79,7 @@
         aws_access_key: 
         aws_secret_key:
         vpc_id: "{{ vpc_result.vpc.id }}"
-        region: "eu-north-1"
+        region: "eu-west-1"
         state: "present"
         name: "sada-sg"
         description: "allow"
@@ -96,7 +96,7 @@
         aws_secret_key: 
         name: "sada-elb"
         state: present
-        region: "eu-north-1"
+        region: "eu-west-1"
         security_group_names: ["sada-sg"]
         subnets: ["{{ pubsubnet_result.subnet.id }}"]
 
@@ -108,7 +108,7 @@
         min_size: 1
         max_size: 3
         desired_capacity: 2
-        region: "eu-north-1"
+        region: "eu-west-1"
         vpc_zone_identifier: "{{ pubsubnet_result.subnet.id }}"
         tags:
           - key: Name
@@ -121,9 +121,8 @@
         name: "sada-launch-config"
         image_id: "ami-0f0ec0d37d04440e3"
         instance_type: "t3.micro"
-        key_name: "stockhol"
-        region: "eu-north-1"
+        key_name: "ireland"
+        region: "eu-west-1"
         security_groups: ["sada-sg"]
         user_data: |
-          #!/bin/bash
-          echo "Hello from user data!" > /tmp/user-data-output.txt
+      
